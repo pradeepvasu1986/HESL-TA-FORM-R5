@@ -1,0 +1,15 @@
+{
+"name": "HESL TA Form",
+"short_name": "TA Form",
+"start_url": "index.html",
+"display": "standalone",
+"background_color": "#1e3c72",
+"theme_color": "#0056b3",
+"icons": [
+{
+"src": "logo.png",
+"sizes": "512x512",
+"type": "image/png"
+}
+ ]
+}

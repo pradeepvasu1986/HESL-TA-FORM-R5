@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TA Form - HESL</title>
+
+<!-- PWA Manifest & App Icons -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+
+<!-- Google Fonts for Digital Watch Style -->
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+
+<!-- jsPDF and autoTable Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+<style>
+body {
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+margin: 0;
+padding: 15px;
+background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+min-height: 100vh;
+}
+.container {
+max-width: 850px;
+margin: auto;
+background: #f8fafc;
+padding: 24px;
+border-radius: 20px;
+box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+box-sizing: border-box;
+overflow: hidden;
+border: 1px solid #e2e8f0;
+}
+
+/* Modernized Header */
+.top-bar {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 20px;
+background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+color: #ffffff;
+padding: 18px 22px;
+border-radius: 14px;
+box-shadow: 0 6px 20px rgba(30,60,114,0.3);
+border-left: 6px solid #38bdf8;
+}
+.top-bar-title h3 { margin: 0 0 5px 0; font-size: 17px; letter-spacing: 0.5px; font-weight: 700; }
+.top-bar-title p { margin: 0; font-size: 10.5px; color: #e2e8f0; line-height: 1.4; }
+
+.menu-icon {
+font-size: 22px;
+cursor: pointer;
+background: rgba(255,255,255,0.15);
+width: 40px;
+height: 40px;
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: 50%;
+transition: all 0.2s;
+}
+.menu-icon:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); }
+
+/* Backdrop for Drawer */
+.drawer-backdrop {
+display: none;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.5);
+z-index: 1500;
+}
+.drawer-backdrop.active {
+display: block;
+}
+
+/* Slide-in Drawer Settings Menu */
+.drawer {
+position: fixed;
+top: 0;
+right: -320px;
+width: 300px;
+height: 100%;
+background: #ffffff;
+box-shadow: -5px 0 25px rgba(0,0,0,0.3);
+z-index: 2000;
+transition: right 0.3s ease-in-out;
+padding: 20px;
+box-sizing: border-box;
+overflow-y: auto;
+}
+.drawer.active {
+right: 0;
+}
+.drawer-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+border-bottom: 2px solid #eef2f7;
+padding-bottom: 10px;
+margin-bottom: 20px;
+}
+.drawer-header h3 { margin: 0; color: #1e3c72; font-size: 16px; }
+.close-drawer {
+background: #dc3545;
+color: white;
+border: none;
+padding: 5px 10px;
+border-radius: 6px;
+cursor: pointer;
+font-weight: bold;
+font-size: 12px;
+}
+
+.header-badge {
+text-align: center;
+margin-bottom: 20px;
+}
+.header-badge h2 {
+margin: 0;
+font-size: 14px;
+background: #e2e8f0;
+color: #1e3c72;
+display: inline-block;
+padding: 6px 18px;
+border-radius: 20px;
+border: 1px solid #cbd5e1;
+font-weight: 700;
+}
+
+.section-title {
+font-size: 13px;
+font-weight: bold;
+color: #1e3c72;
+margin-top: 20px;
+margin-bottom: 8px;
+border-bottom: 2px solid #e2e8f0;
+padding-bottom: 4px;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+}
+
+.form-group { margin-bottom: 12px; }
+label { display: block; font-weight: bold; font-size: 11px; margin-bottom: 4px; color: #334155; }
+input {
+width: 100%;
+padding: 10px;
+box-sizing: border-box;
+border: 1px solid #cbd5e1;
+border-radius: 8px;
+font-size: 13px;
+background: #ffffff;
+transition: all 0.3s ease;
+}
+input:focus {
+border-color: #1e3c72;
+outline: none;
+box-shadow: 0 0 8px rgba(30, 60, 114, 0.2);
+background: #fff;
+}
+input.error-input {
+border-color: #ef4444 !important;
+background-color: #fef2f2 !important;
+box-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
+}
+
+.row { display: flex; gap: 10px; }
+.col { flex: 1; }
+
+/* Casio Digital Watch GPS Control Box */
+.gps-control-box {
+background: #e2e8f0;
+padding: 12px;
+border-radius: 8px;
+margin-bottom: 12px;
+border: 1px dashed #94a3b8;
+}
+
+.digital-watch-display {
+background: #090d16;
+border: 2px solid #334155;
+border-radius: 6px;
+padding: 8px 12px;
+margin-top: 8px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+}
+
+.digital-status {
+font-size: 10px;
+color: #94a3b8;
+text-transform: uppercase;
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+font-weight: bold;
+}
+
+.digital-counter {
+font-family: 'Orbitron', monospace;
+font-size: 20px;
+color: #38bdf8;
+letter-spacing: 2px;
+text-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+}
+
+.btn-container { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.my-btn {
+flex: 1;
+padding: 12px;
+color: white;
+border: none;
+border-radius: 8px;
+font-size: 13px;
+font-weight: bold;
+cursor: pointer;
+min-width: 140px;
+box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+transition: transform 0.2s, filter 0.2s;
+text-align: center;
+text-decoration: none;
+display: inline-block;
+}
+.my-btn:active { transform: scale(0.97); }
+.btn-add { background: linear-gradient(135deg, #10b981, #059669); }
+.btn-pdf { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.btn-submit { background: linear-gradient(135deg, #f97316, #c2410c); }
+.btn-history { background: linear-gradient(135deg, #06b6d4, #0891b2); color: #ffffff; }
+
+.btn-gps-start { background: linear-gradient(135deg, #8b5cf6, #6d28d9); font-size: 11px; padding: 8px; min-width: 110px; }
+.btn-gps-stop { background: linear-gradient(135deg, #ef4444, #b91c1c); font-size: 11px; padding: 8px; min-width: 110px; }
+
+.btn-edit { background: #f59e0b; color: #fff; padding: 5px 10px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+.btn-delete { background: #ef4444; color: white; padding: 5px 10px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+/* Table Styling */
+.table-responsive {
+width: 100%;
+overflow-x: auto;
+margin-top: 20px;
+border-radius: 8px;
+box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+border: 1px solid #e2e8f0;
+}
+table { width: 100%; border-collapse: collapse; background: #ffffff; min-width: 600px; }
+th, td { border: 1px solid #e2e8f0; padding: 10px 8px; text-align: center; font-size: 12px; }
+th {
+background: linear-gradient(135deg, #1e3c72, #2a5298);
+color: white;
+text-transform: uppercase;
+font-size: 11px;
+letter-spacing: 0.5px;
+}
+tbody tr:nth-child(even) { background-color: #f8fafc; }
+tbody tr:hover { background-color: #f1f5f9; }
+
+.total-row { font-weight: bold; background: #e2e8f0 !important; color: #0f172a; }
+
+/* Modal Styles */
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
+.modal-content { background: #fff; padding: 20px; width: 90%; max-width: 500px; border-radius: 12px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+.close-modal { float: right; background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+.history-item { border: 1px solid #e2e8f0; padding: 12px; margin-bottom: 12px; border-radius: 8px; background: #f8fafc; display: flex; justify-content: space-between; align-items: center; }
+.clear-history-btn { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 11px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+<!-- Top Bar with Settings Menu Icon -->
+<div class="top-bar">
+<div class="top-bar-title">
+<h3>HYDROTECH ENERGY SOLUTIONS PVT LTD</h3>
+<p>1st floor, T.C.79/1779(3), Muttathara, Vallakkadavu P.O, Thiruvananthapuram, Kerala</p>
+</div>
+<div class="menu-icon" onclick="openDrawer()" title="Settings">☰</div>
+</div>
+
+<div class="header-badge">
+<h2 id="displayHeading">TRAVEL ALLOWANCE - AUGUST 2026</h2>
+</div>
+
+<div class="section-title">New Entry Details</div>
+<div class="row">
+<div class="col">
+<label>REPORT MONTH / HEADING:</label>
+<input type="text" id="reportMonthInput" value="AUGUST 2026" oninput="updateHeaderPreview()">
+</div>
+<div class="col">
+<label>DATE:</label>
+<input type="date" id="dateInput" oninput="removeError(this)">
+</div>
+</div>
+
+<div class="form-group" style="margin-top: 10px;">
+<label>SITE TRAVELLED:</label>
+<input type="text" id="siteInput" placeholder="Eg: Home - SCT - Office" oninput="removeError(this)">
+</div>
+<div class="form-group">
+<label>PURPOSE:</label>
+<input type="text" id="purposeInput" placeholder="Eg: Electrical work" oninput="removeError(this)">
+</div>
+
+<!-- GPS Tracker Integration Box with Casio Digital Display -->
+<div class="gps-control-box">
+<label style="color: #1e3c72; margin-bottom: 6px;">LIVE GPS DISTANCE TRACKER (MAPS):</label>
+<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+<button type="button" class="my-btn btn-gps-start" onclick="startGpsTracking()">Start Journey</button>
+<button type="button" class="my-btn btn-gps-stop" onclick="stopGpsTracking()">Stop & Add KM</button>
+</div>
+<!-- Casio Digital Watch Display Box -->
+<div class="digital-watch-display">
+<span id="gpsStatusText" class="digital-status">Status: IDLE</span>
+<span id="digitalKmCounter" class="digital-counter">0.00 KM</span>
+</div>
+</div>
+
+<div class="form-group">
+<label>KMs:</label>
+<input type="number" id="kmInput" step="1" placeholder="Eg: 23" oninput="removeError(this)">
+</div>
+
+<div class="btn-container">
+<button type="button" class="my-btn btn-add" id="actionBtn" onclick="addNewEntry()">Add Entry</button>
+<button type="button" class="my-btn btn-pdf" onclick="generatePDFReport()">Download PDF</button>
+<button type="button" class="my-btn btn-submit" onclick="submitForApproval()">Submitted for Approval</button>
+<button type="button" class="my-btn btn-history" onclick="openHistoryModal()">View History</button>
+</div>
+
+<div style="margin-top: 15px; display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; color: #1e293b; background: #e2e8f0; padding: 8px 12px; border-radius: 6px;">
+<span id="previewNameText">NAME: Pradeep VJ</span>
+<span id="previewDesigText">DESIGNATION: Supervisor</span>
+</div>
+
+<div class="table-responsive">
+<table id="dataTable">
+<thead>
+<tr>
+<th>SL NO</th>
+<th>DATE</th>
+<th>SITE TRAVELLED</th>
+<th>PURPOSE</th>
+<th>KMs</th>
+<th>AMOUNT (₹)</th>
+<th>ACTIONS</th>
+</tr>
+</thead>
+<tbody>
+<!-- Data rows go here -->
+</tbody>
+<tfoot>
+<tr class="total-row">
+<td colspan="4">EMPLOYEE TOTAL</td>
+<td id="totKm">0</td>
+<td id="totAmt">₹0</td>
+<td></td>
+</tr>
+</tfoot>
+</table>
+</div>
+</div>
+
+<!-- Backdrop for clicking outside drawer -->
+<div id="drawerBackdrop" class="drawer-backdrop" onclick="closeDrawer()"></div>
+
+<!-- Slide-in Settings Drawer -->
+<div id="settingsDrawer" class="drawer">
+<div class="drawer-header">
+<h3>Settings & Backup</h3>
+<button class="close-drawer" onclick="closeDrawer()">Close</button>
+</div>
+<div class="form-group">
+<label>EMPLOYEE NAME:</label>
+<input type="text" id="setEmpName" value="Pradeep VJ" oninput="removeError(this)">
+</div>
+<div class="form-group">
+<label>DESIGNATION:</label>
+<input type="text" id="setEmpDesig" value="Supervisor" oninput="removeError(this)">
+</div>
+<div class="form-group">
+<label>PHONE NUMBER:</label>
+<input type="text" id="setEmpPhone" placeholder="Enter phone number" oninput="removeError(this)">
+</div>
+<div class="form-group">
+<label>EMAIL ID (For Backup):</label>
+<input type="email" id="setEmpEmail" placeholder="Enter your email ID" oninput="removeError(this)">
+</div>
+<div class="form-group">
+<label>RATE PER KM (₹):</label>
+<input type="number" id="setRate" value="4">
+</div>
+<div class="form-group">
+<label>EMPLOYEE SIGNATURE IMAGE (Any format):</label>
+<input type="file" id="setEmpSigFile" accept="image/*" onchange="previewSignature(event)" style="font-size: 11px; padding: 6px;">
+<div id="sigPreviewContainer" style="margin-top: 8px; text-align: center;"></div>
+</div>
+<button type="button" class="my-btn btn-add" style="margin-top: 10px; width: 100%;" onclick="saveSettings()">Save Settings</button>
+
+<div style="margin-top: 25px; border-top: 1px solid #cbd5e1; padding-top: 15px;">
+<label style="color: #0284c7; margin-bottom: 8px;">DATA BACKUP & RESTORE:</label>
+<button type="button" class="my-btn btn-pdf" style="width: 100%; margin-bottom: 8px; font-size: 11px;" onclick="exportBackupFile()">Export Backup (File)</button>
+<button type="button" class="my-btn btn-submit" style="width: 100%; margin-bottom: 8px; font-size: 11px;" onclick="sendBackupToEmail()">Email Backup File</button>
+<input type="file" id="importFile" style="display:none" onchange="importBackupFile(event)">
+<button type="button" class="my-btn btn-history" style="width: 100%; font-size: 11px;" onclick="document.getElementById('importFile').click()">Restore Backup</button>
+</div>
+</div>
+
+<!-- History Modal -->
+<div id="historyModal" class="modal">
+<div class="modal-content">
+<button class="close-modal" onclick="closeHistoryModal()">Close</button>
+<h3>Submitted TA History</h3>
+<div style="margin-top: 10px;">
+<button type="button" class="clear-history-btn" onclick="clearAllHistory()">Clear All History</button>
+</div>
+<div id="historyListContainer" style="margin-top: 10px;"></div>
+</div>
+</div>
+
+<script>
+var entriesList = [];
+var editingIndex = -1;
+var tempSigBase64 = "";
+
+var watchId = null;
+var previousCoords = null;
+var accumulatedGpsKm = 0;
+
+window.onload = function() {
+loadSettings();
+var savedEntries = localStorage.getItem('ta_current_entries');
+if (savedEntries) {
+entriesList = JSON.parse(savedEntries);
+renderTable();
+}
+
+var savedMonth = localStorage.getItem('ta_reportMonth');
+if (savedMonth) {
+document.getElementById('reportMonthInput').value = savedMonth;
+} else {
+document.getElementById('reportMonthInput').value = "AUGUST 2026";
+}
+
+var todayStr = new Date().toISOString().split('T')[0];
+document.getElementById('dateInput').value = todayStr;
+
+checkWeeklyBackupReminder();
+updateHeaderPreview();
+};
+
+function checkWeeklyBackupReminder() {
+var lastBackupTime = localStorage.getItem('ta_last_backup_time');
+var currentTime = new Date().getTime();
+var oneWeekMs = 7 * 24 * 60 * 60 * 1000;
+
+if (!lastBackupTime || (currentTime - parseInt(lastBackupTime)) > oneWeekMs) {
+setTimeout(function() {
+alert("ഓർമ്മപ്പെടുത്തൽ: അവസാനമായി ബാക്കപ്പ് എടുത്തിട്ട് ഒരാഴ്ച കഴിഞ്ഞിരിക്കുന്നു. നിങ്ങളുടെ ഡാറ്റ സുരക്ഷിതമാക്കാൻ 'Export Backup' അല്ലെങ്കിൽ 'Email Backup' ചെയ്യുക!");
+}, 1500);
+}
+}
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+var R = 6371;
+var dLat = deg2rad(lat2 - lat1);
+var dLon = deg2rad(lon2 - lon1);
+var a =
+Math.sin(dLat/2) * Math.sin(dLat/2) +
+Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+Math.sin(dLon/2) * Math.sin(dLon/2);
+var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+var d = R * c;
+return d;
+}
+
+function deg2rad(deg) {
+return deg * (Math.PI/180);
+}
+
+function startGpsTracking() {
+if (!navigator.geolocation) {
+alert("നിങ്ങളുടെ ബ്രൗസർ ജി.പി.എസ് സപ്പോർട്ട് ചെയ്യുന്നില്ല!");
+return;
+}
+
+accumulatedGpsKm = 0;
+previousCoords = null;
+document.getElementById('gpsStatusText').innerText = "Status: Tracking";
+document.getElementById('gpsStatusText').style.color = "#38bdf8";
+document.getElementById('digitalKmCounter').innerText = "0.00 KM";
+
+watchId = navigator.geolocation.watchPosition(
+function(position) {
+var currentLat = position.coords.latitude;
+var currentLon = position.coords.longitude;
+var accuracy = position.coords.accuracy;
+
+// Ignore inaccurate GPS readings (e.g. accuracy worse than 25 meters)
+if (accuracy > 25) return;
+
+if (previousCoords) {
+var dist = calculateDistance(previousCoords.lat, previousCoords.lon, currentLat, currentLon);
+
+// Filter out micro-jitter (movements less than 8 meters are ignored to prevent phantom mileage)
+if (dist >= 0.008) {
+accumulatedGpsKm += dist;
+previousCoords = { lat: currentLat, lon: currentLon };
+}
+} else {
+previousCoords = { lat: currentLat, lon: currentLon };
+}
+
+// Display exact decimal value in digital watch format
+document.getElementById('digitalKmCounter').innerText = accumulatedGpsKm.toFixed(2) + " KM";
+},
+function(error) {
+alert("ജി.പി.എസ് സിഗ്നൽ ലഭ്യമല്ല. ലൊക്കേഷൻ പെർമിഷൻ ചെക്ക് ചെയ്യുക.");
+document.getElementById('gpsStatusText').innerText = "Status: ERROR";
+document.getElementById('gpsStatusText').style.color = "#ef4444";
+},
+{ enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+);
+}
+
+function stopGpsTracking() {
+if (watchId !== null) {
+navigator.geolocation.clearWatch(watchId);
+watchId = null;
+}
+
+var kmField = document.getElementById('kmInput');
+var existingKm = parseFloat(kmField.value) || 0;
+var totalCalculated = existingKm + accumulatedGpsKm;
+
+// Round up to the next upper whole number (Ceiling) when adding to input
+var roundedKm = Math.ceil(totalCalculated);
+
+kmField.value = roundedKm;
+document.getElementById('gpsStatusText').innerText = "Status: STOPPED";
+document.getElementById('gpsStatusText').style.color = "#10b981";
+document.getElementById('digitalKmCounter').innerText = roundedKm.toFixed(2) + " KM";
+
+accumulatedGpsKm = 0;
+previousCoords = null;
+}
+
+function openDrawer() {
+document.getElementById('settingsDrawer').classList.add('active');
+document.getElementById('drawerBackdrop').classList.add('active');
+}
+
+function closeDrawer() {
+document.getElementById('settingsDrawer').classList.remove('active');
+document.getElementById('drawerBackdrop').classList.remove('active');
+}
+
+function removeError(elem) {
+elem.classList.remove('error-input');
+}
+
+function previewSignature(event) {
+var file = event.target.files[0];
+if (file) {
+var reader = new FileReader();
+reader.onload = function(e) {
+tempSigBase64 = e.target.result;
+document.getElementById('sigPreviewContainer').innerHTML = '<img src="' + tempSigBase64 + '" style="max-height: 50px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px;" alt="Signature Preview">';
+};
+reader.readAsDataURL(file);
+}
+}
+
+function saveSettings() {
+var nameField = document.getElementById('setEmpName');
+var desigField = document.getElementById('setEmpDesig');
+var phoneField = document.getElementById('setEmpPhone');
+
+var hasError = false;
+
+if (!nameField.value.trim()) { nameField.classList.add('error-input'); hasError = true; }
+if (!desigField.value.trim()) { desigField.classList.add('error-input'); hasError = true; }
+if (!phoneField.value.trim()) { phoneField.classList.add('error-input'); hasError = true; }
+
+if (hasError) {
+alert("ദയവായി എംപ്ലോയി നെയിം, ഡെസിഗ്നേഷൻ, ഫോൺ നമ്പർ എന്നിവ ശരിയായി പൂരിപ്പിക്കുക!");
+return;
+}
+
+localStorage.setItem('ta_empName', nameField.value.trim());
+localStorage.setItem('ta_empDesig', desigField.value.trim());
+localStorage.setItem('ta_empPhone', phoneField.value.trim());
+localStorage.setItem('ta_empEmail', document.getElementById('setEmpEmail').value.trim());
+localStorage.setItem('ta_rate', document.getElementById('setRate').value);
+
+if (tempSigBase64) {
+localStorage.setItem('ta_empSig', tempSigBase64);
+}
+
+updateHeaderPreview();
+closeDrawer();
+alert("സെറ്റിംഗ്സ് വിജയകരമായി സേവ് ചെയ്തിരിക്കുന്നു!");
+renderTable();
+}
+
+function loadSettings() {
+document.getElementById('setEmpName').value = localStorage.getItem('ta_empName') || 'Pradeep VJ';
+document.getElementById('setEmpDesig').value = localStorage.getItem('ta_empDesig') || 'Supervisor';
+document.getElementById('setEmpPhone').value = localStorage.getItem('ta_empPhone') || '';
+document.getElementById('setEmpEmail').value = localStorage.getItem('ta_empEmail') || '';
+document.getElementById('setRate').value = localStorage.getItem('ta_rate') || '4';
+
+var savedSig = localStorage.getItem('ta_empSig');
+if (savedSig) {
+tempSigBase64 = savedSig;
+document.getElementById('sigPreviewContainer').innerHTML = '<img src="' + savedSig + '" style="max-height: 50px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px;" alt="Signature Preview">';
+}
+}
+
+function updateHeaderPreview() {
+var monthVal = document.getElementById('reportMonthInput').value;
+localStorage.setItem('ta_reportMonth', monthVal);
+
+var nameVal = localStorage.getItem('ta_empName') || 'Pradeep VJ';
+var desigVal = localStorage.getItem('ta_empDesig') || 'Supervisor';
+
+document.getElementById('displayHeading').innerText = "TRAVEL ALLOWANCE - " + monthVal.toUpperCase();
+document.getElementById('previewNameText').innerText = "NAME: " + nameVal;
+document.getElementById('previewDesigText').innerText = "DESIGNATION: " + desigVal;
+}
+
+function saveToLocalStorage() {
+localStorage.setItem('ta_current_entries', JSON.stringify(entriesList));
+}
+
+function formatDate(dateString) {
+if (!dateString) return '';
+var parts = dateString.split('-');
+if (parts.length === 3) {
+return parts[2] + '-' + parts[1] + '-' + parts[0];
+}
+return dateString;
+}
+
+function addNewEntry() {
+var dateField = document.getElementById('dateInput');
+var siteField = document.getElementById('siteInput');
+var purposeField = document.getElementById('purposeInput');
+var kmField = document.getElementById('kmInput');
+
+var dateVal = dateField.value;
+var siteVal = siteField.value.trim();
+var purposeVal = purposeField.value.trim();
+
+var rawKm = parseFloat(kmField.value);
+var kmVal = isNaN(rawKm) ? 0 : Math.ceil(rawKm);
+
+var rateVal = parseFloat(localStorage.getItem('ta_rate') || '4');
+
+var hasError = false;
+
+if (!dateVal) { dateField.classList.add('error-input'); hasError = true; }
+if (!siteVal) { siteField.classList.add('error-input'); hasError = true; }
+if (!purposeVal) { purposeField.classList.add('error-input'); hasError = true; }
+if (isNaN(rawKm) || rawKm <= 0) { kmField.classList.add('error-input'); hasError = true; }
+
+if (hasError) {
+alert("ദയവായി എല്ലാ വിവരങ്ങളും ശരിയായി പൂരിപ്പിക്കുക!");
+return;
+}
+
+var amountVal = kmVal * rateVal;
+
+if (editingIndex === -1) {
+entriesList.push({
+date: dateVal,
+site: siteVal,
+purpose: purposeVal,
+km: kmVal,
+amount: amountVal
+});
+} else {
+entriesList[editingIndex] = {
+date: dateVal,
+site: siteVal,
+purpose: purposeVal,
+km: kmVal,
+amount: amountVal
+};
+editingIndex = -1;
+var actionBtn = document.getElementById('actionBtn');
+actionBtn.innerText = "Add Entry";
+actionBtn.style.background = "linear-gradient(135deg, #10b981, #059669)";
+}
+
+saveToLocalStorage();
+renderTable();
+clearFormInputs();
+}
+
+function renderTable() {
+var tbodyElem = document.querySelector('#dataTable tbody');
+tbodyElem.innerHTML = '';
+
+var totalKmsSum = 0;
+var totalAmtsSum = 0;
+var rateVal = parseFloat(localStorage.getItem('ta_rate') || '4');
+
+for (var i = 0; i < entriesList.length; i++) {
+var item = entriesList[i];
+item.km = Math.ceil(item.km);
+item.amount = item.km * rateVal;
+totalKmsSum += item.km;
+totalAmtsSum += item.amount;
+
+var rowHTML = '<tr>' +
+'<td>' + (i + 1) + '</td>' +
+'<td>' + formatDate(item.date) + '</td>' +
+'<td>' + item.site + '</td>' +
+'<td>' + item.purpose + '</td>' +
+'<td>' + item.km + '</td>' +
+'<td>' + item.amount.toFixed(2) + '</td>' +
+'<td>' +
+'<button type="button" class="btn-edit" onclick="editEntry(' + i + ')">Edit</button> ' +
+'<button type="button" class="btn-delete" onclick="deleteEntry(' + i + ')">Delete</button>' +
+'</td>' +
+'</tr>';
+tbodyElem.innerHTML += rowHTML;
+}
+
+document.getElementById('totKm').innerText = totalKmsSum;
+document.getElementById('totAmt').innerText = '₹' + totalAmtsSum.toFixed(2);
+}
+
+function editEntry(index) {
+var item = entriesList[index];
+document.getElementById('dateInput').value = item.date;
+document.getElementById('siteInput').value = item.site;
+document.getElementById('purposeInput').value = item.purpose;
+document.getElementById('kmInput').value = item.km;
+
+editingIndex = index;
+var btn = document.getElementById('actionBtn');
+btn.innerText = "Update Entry";
+btn.style.background = "linear-gradient(135deg, #f59e0b, #d97706)";
+}
+
+function deleteEntry(index) {
+if (confirm("തീർച്ചയായും ഈ ഡാറ്റ ഒഴിവാക്കണമെന്നുണ്ടോ?")) {
+entriesList.splice(index, 1);
+if (editingIndex === index) {
+clearFormInputs();
+editingIndex = -1;
+var actionBtn = document.getElementById('actionBtn');
+actionBtn.innerText = "Add Entry";
+actionBtn.style.background = "linear-gradient(135deg, #10b981, #059669)";
+}
+saveToLocalStorage();
+renderTable();
+}
+}
+
+function clearFormInputs() {
+document.getElementById('siteInput').value = '';
+document.getElementById('purposeInput').value = '';
+document.getElementById('kmInput').value = '';
+}
+
+function createStyledPDF(monthText, nameText, desigText, phoneText, sigData, entries) {
+const { jsPDF } = window.jspdf;
+const doc = new jsPDF();
+
+doc.setFillColor(255, 255, 255);
+doc.setDrawColor(30, 60, 114);
+doc.setLineWidth(1.2);
+doc.roundedRect(14, 10, 182, 30, 3, 3, 'FD');
+
+try {
+var logoImg = new Image();
+logoImg.src = '83391.png';
+doc.addImage(logoImg, 'PNG', 17, 13, 24, 24);
+} catch(e) {}
+
+doc.setFont("helvetica", "bold");
+doc.setFontSize(13.5);
+doc.setTextColor(30, 60, 114);
+doc.text("HYDROTECH ENERGY SOLUTIONS PVT LTD", 105, 20, { align: "center" });
+
+doc.setFont("helvetica", "normal");
+doc.setFontSize(8);
+doc.setTextColor(60, 60, 60);
+doc.text("1st floor, T.C.79/1779(3), Muttathara, Vallakkadavu P.O, Thiruvananthapuram, Kerala", 105, 26, { align: "center" });
+
+doc.setFont("helvetica", "bold");
+doc.setFontSize(9.5);
+doc.setTextColor(0, 64, 133);
+doc.text("TRAVEL ALLOWANCE - " + monthText.toUpperCase(), 105, 34, { align: "center" });
+
+doc.setTextColor(50, 50, 50);
+doc.setFontSize(9);
+doc.text("NAME: " + nameText, 14, 48);
+doc.text("PHONE: " + phoneText, 80, 48);
+doc.text("DESIGNATION: " + desigText, 140, 48);
+
+var tableRows = [];
+for (var i = 0; i < entries.length; i++) {
+var item = entries[i];
+tableRows.push([
+i + 1,
+formatDate(item.date),
+item.site,
+item.purpose,
+item.km,
+item.amount.toFixed(2)
+ ]);
+}
+
+doc.autoTable({
+startY: 53,
+head: [['SL NO', 'DATE', 'SITE TRAVELLED', 'PURPOSE', 'KMs', 'AMOUNT (Rs)']],
+body: tableRows,
+theme: 'grid',
+headStyles: { fillColor: [30, 60, 114], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.5, cellPadding: 3.5 },
+styles: { fontSize: 8, cellPadding: 2.5 },
+margin: { left: 14, right: 14 }
+});
+
+var finalYPos = doc.lastAutoTable.finalY || 57;
+var tKmCount = 0;
+var tAmtCount = 0;
+for (var i = 0; i < entries.length; i++) {
+tKmCount += entries[i].km;
+tAmtCount += entries[i].amount;
+}
+
+if (finalYPos > 265) {
+doc.addPage();
+finalYPos = 20;
+}
+
+doc.setFont("helvetica", "bold");
+doc.setFontSize(9);
+doc.text("EMPLOYEE TOTAL: KMs = " + tKmCount + " | Amount = Rs. " + tAmtCount.toFixed(2), 14, finalYPos + 10);
+
+var sigY = finalYPos + 22;
+if (sigY > 275) {
+doc.addPage();
+sigY = 30;
+}
+
+if (sigData) {
+try {
+doc.addImage(sigData, 'JPEG', 14, sigY, 35, 15);
+} catch(e) {
+try {
+doc.addImage(sigData, 'PNG', 14, sigY, 35, 15);
+} catch(err) {}
+}
+}
+
+var textY = sigY + 19;
+doc.setFontSize(8.5);
+doc.text("EMPLOYEES SIGNATURE", 14, textY);
+doc.text("CHECKED BY", 98, textY);
+doc.text("APPROVED BY", 196, textY, { align: "right" });
+
+return doc;
+}
+
+function submitForApproval() {
+if (entriesList.length === 0) {
+alert("റീസെറ്റ് ചെയ്യാൻ ടേബിളിൽ ഡാറ്റകളൊന്നും ഇല്ല!");
+return;
+}
+
+var confirmReset = confirm("മുന്നറിയിപ്പ്: നിങ്ങൾ 'Submitted for Approval' നൽകിയാൽ ടേബിളിലെ നിലവിലെ ഡാറ്റ റീസെറ്റ് ആകാൻ പോവുകയാണ്. തുടരണോ?");
+if (confirmReset) {
+var monthText = document.getElementById('reportMonthInput').value;
+var nameText = localStorage.getItem('ta_empName') || 'Pradeep VJ';
+var desigText = localStorage.getItem('ta_empDesig') || 'Supervisor';
+var phoneText = localStorage.getItem('ta_empPhone') || '';
+var sigData = localStorage.getItem('ta_empSig') || '';
+
+var submissionRecord = {
+id: new Date().getTime(),
+dateSubmitted: new Date().toLocaleDateString(),
+month: monthText,
+name: nameText,
+designation: desigText,
+phone: phoneText,
+signature: sigData,
+entries: [...entriesList]
+};
+
+var existingHistory = JSON.parse(localStorage.getItem('ta_history') || '[]');
+existingHistory.push(submissionRecord);
+localStorage.setItem('ta_history', JSON.stringify(existingHistory));
+
+entriesList = [];
+saveToLocalStorage();
+renderTable();
+alert("ഡാറ്റ വിജയകരമായി റീസെറ്റ് ചെയ്തിരിക്കുന്നു!");
+}
+}
+
+function openHistoryModal() {
+var modal = document.getElementById('historyModal');
+var container = document.getElementById('historyListContainer');
+container.innerHTML = '';
+
+var existingHistory = JSON.parse(localStorage.getItem('ta_history') || '[]');
+
+if (existingHistory.length === 0) {
+container.innerHTML = '<p style="text-align:center; color:#666;">സബ്മിറ്റ് ചെയ്ത ഹിസ്റ്ററി ഒന്നുമില്ല.</p>';
+} else {
+existingHistory.forEach(function(record, idx) {
+var totalKm = record.entries.reduce((sum, item) => sum + item.km, 0);
+var totalAmt = record.entries.reduce((sum, item) => sum + item.amount, 0);
+
+var div = document.createElement('div');
+div.className = 'history-item';
+div.innerHTML = '<div><strong>#' + (idx + 1) + ' - Month: ' + record.month + '</strong><br>' +
+'<small style="color:#555;">Submitted on: ' + record.dateSubmitted + ' | Name: ' + record.name + '</small><br>' +
+'<small style="color:#1e3c72; font-weight:bold;">Total KMs: ' + totalKm + ' | Total Amount: ₹' + totalAmt.toFixed(2) + '</small></div>' +
+'<div style="display:flex; gap:5px;" id="hist-btn-wrap-' + record.id + '">' +
+'<button type="button" class="my-btn btn-pdf" style="padding: 6px 10px; font-size: 11px; min-width: auto;" onclick="downloadHistoryPDF(' + record.id + ')">PDF</button>' +
+'<button type="button" class="btn-delete" style="padding: 6px 10px; font-size: 11px;" onclick="deleteSingleHistory(' + record.id + ')">Delete</button>' +
+'</div>';
+container.appendChild(div);
+});
+}
+
+modal.style.display = 'flex';
+}
+
+function closeHistoryModal() {
+document.getElementById('historyModal').style.display = 'none';
+}
+
+function deleteSingleHistory(recordId) {
+if (confirm("ഈ ഹിസ്റ്ററി എൻട്രി ഡിലീറ്റ് ചെയ്യണമെന്നുണ്ടോ?")) {
+var existingHistory = JSON.parse(localStorage.getItem('ta_history') || '[]');
+var updatedHistory = existingHistory.filter(item => item.id !== recordId);
+localStorage.setItem('ta_history', JSON.stringify(updatedHistory));
+openHistoryModal();
+}
+}
+
+function clearAllHistory() {
+if (confirm("എല്ലാ ഹിസ്റ്ററി ഡാറ്റകളും പൂർണ്ണമായി ഒഴിവാക്കണമെന്നുണ്ടോ?")) {
+localStorage.removeItem('ta_history');
+openHistoryModal();
+}
+}
+
+function downloadHistoryPDF(recordId) {
+var existingHistory = JSON.parse(localStorage.getItem('ta_history') || '[]');
+var record = existingHistory.find(item => item.id === recordId);
+
+if (!record) return;
+
+const doc = createStyledPDF(record.month, record.name, record.designation, record.phone || '', record.signature || '', record.entries);
+const pdfBlob = doc.output('blob');
+const pdfUrl = URL.createObjectURL(pdfBlob);
+var fileName = "TA_Report_" + record.month.replace(/\s+/g, '_') + ".pdf";
+
+var wrapDiv = document.getElementById('hist-btn-wrap-' + recordId);
+wrapDiv.innerHTML = '<a href="' + pdfUrl + '" download="' + fileName + '" class="my-btn btn-pdf" style="padding: 6px 10px; font-size: 11px; min-width: auto; display:inline-block;">Save PDF</a> ' +
+'<button type="button" class="btn-delete" style="padding: 6px 10px; font-size: 11px;" onclick="deleteSingleHistory(' + recordId + ')">Delete</button>';
+}
+
+function generatePDFReport() {
+if (entriesList.length === 0) {
+alert("ജനറേറ്റ് ചെയ്യാൻ ഡാറ്റകളൊന്നും ഇല്ല!");
+return;
+}
+
+var monthText = document.getElementById('reportMonthInput').value.toUpperCase();
+var nameText = localStorage.getItem('ta_empName') || 'Pradeep VJ';
+var desigText = localStorage.getItem('ta_empDesig') || 'Supervisor';
+var phoneText = localStorage.getItem('ta_empPhone') || '';
+var sigData = localStorage.getItem('ta_empSig') || '';
+
+const doc = createStyledPDF(monthText, nameText, desigText, phoneText, sigData, entriesList);
+const pdfBlob = doc.output('blob');
+const pdfUrl = URL.createObjectURL(pdfBlob);
+var fileName = "TA_Report_" + monthText.replace(/\s+/g, '_') + ".pdf";
+
+var downloadLink = document.createElement('a');
+downloadLink.href = pdfUrl;
+downloadLink.download = fileName;
+downloadLink.click();
+}
+
+function exportBackupFile() {
+var backupData = {
+empName: localStorage.getItem('ta_empName'),
+empDesig: localStorage.getItem('ta_empDesig'),
+empPhone: localStorage.getItem('ta_empPhone'),
+empEmail: localStorage.getItem('ta_empEmail'),
+empSig: localStorage.getItem('ta_empSig'),
+rate: localStorage.getItem('ta_rate'),
+reportMonth: localStorage.getItem('ta_reportMonth'),
+currentEntries: localStorage.getItem('ta_current_entries'),
+history: localStorage.getItem('ta_history'),
+backupDate: new Date().toLocaleDateString()
+};
+
+localStorage.setItem('ta_last_backup_time', new Date().getTime());
+
+var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData));
+var dlAnchor = document.createElement('a');
+dlAnchor.href = dataStr;
+dlAnchor.download = "HESL_TA_Backup_" + new Date().toISOString().split('T')[0] + ".json";
+dlAnchor.click();
+}
+
+function sendBackupToEmail() {
+var userEmail = localStorage.getItem('ta_empEmail');
+if (!userEmail) {
+alert("ദയവായി സെറ്റിംഗ്സിൽ നിങ്ങളുടെ ഇമെയിൽ ഐഡി നൽകി സേവ് ചെയ്യുക!");
+openDrawer();
+return;
+}
+
+var backupData = {
+empName: localStorage.getItem('ta_empName'),
+empDesig: localStorage.getItem('ta_empDesig'),
+empPhone: localStorage.getItem('ta_empPhone'),
+empEmail: userEmail,
+empSig: localStorage.getItem('ta_empSig'),
+rate: localStorage.getItem('ta_rate'),
+reportMonth: localStorage.getItem('ta_reportMonth'),
+currentEntries: localStorage.getItem('ta_current_entries'),
+history: localStorage.getItem('ta_history'),
+backupDate: new Date().toLocaleDateString()
+};
+
+localStorage.setItem('ta_last_backup_time', new Date().getTime());
+
+var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData));
+var fileName = "HESL_TA_Backup_" + new Date().toISOString().split('T')[0] + ".json";
+
+var dlAnchor = document.createElement('a');
+dlAnchor.href = dataStr;
+dlAnchor.download = fileName;
+document.body.appendChild(dlAnchor);
+dlAnchor.click();
+document.body.removeChild(dlAnchor);
+
+var subject = encodeURIComponent("HESL TA App Backup File - " + new Date().toLocaleDateString());
+var body = encodeURIComponent("ഹലോ,\n\nഇതുവഴി എന്റെ HESL TA App-ന്റെ ബാക്കപ്പ് ഫയൽ അറ്റാച്ച് ചെയ്തിരിക്കുന്നു. (ഡൗൺലോഡ്സ് ഫോൾഡറിൽ സേവ് ആയ " + fileName + " ഫയൽ ഈ മെയിലിലേക്ക് അറ്റാച്ച് ചെയ്ത് അയക്കുക).\n\nനന്ദി.");
+
+setTimeout(function() {
+window.location.href = "mailto:" + userEmail + "?subject=" + subject + "&body=" + body;
+}, 1000);
+}
+
+function importBackupFile(event) {
+var file = event.target.files[0];
+if (!file) return;
+
+var reader = new FileReader();
+reader.onload = function(e) {
+try {
+var backupData = JSON.parse(e.target.result);
+if (backupData.empName) localStorage.setItem('ta_empName', backupData.empName);
+if (backupData.empDesig) localStorage.setItem('ta_empDesig', backupData.empDesig);
+if (backupData.empPhone) localStorage.setItem('ta_empPhone', backupData.empPhone);
+if (backupData.empEmail) localStorage.setItem('ta_empEmail', backupData.empEmail);
+if (backupData.empSig) localStorage.setItem('ta_empSig', backupData.empSig);
+if (backupData.rate) localStorage.setItem('ta_rate', backupData.rate);
+if (backupData.reportMonth) localStorage.setItem('ta_reportMonth', backupData.reportMonth);
+if (backupData.currentErrors) localStorage.setItem('ta_current_entries', backupData.currentEntries);
+if (backupData.history) localStorage.setItem('ta_history', backupData.history);
+
+alert("ബാക്കപ്പ് ഫയൽ വിജയകരമായി റീകവർ (Restore) ചെയ്തിരിക്കുന്നു!");
+location.reload();
+} catch (err) {
+alert("തെറ്റായ ബാക്കപ്പ് ഫയൽ ആണ്!");
+}
+};
+reader.readAsText(file);
+}
+</script>
+
+</body>
+</html>
